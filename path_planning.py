@@ -41,8 +41,8 @@ def get_turning_angle(pos0, pos1, posref):
     magA = math.sqrt(aX**2 + aY**2)
 
     # magnitude of B
-    bX = posref[0]-pos1[0]
-    bY = posref[1]-pos1[1]
+    bX = pos1[0]-posref[0]
+    bY = pos1[1]-posref[1]
     magB = math.sqrt(bX**2 + bY**2)
 
     #  dot product
