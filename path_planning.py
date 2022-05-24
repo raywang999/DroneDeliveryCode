@@ -11,7 +11,9 @@ running = True
 # to get coefficient
 
 # For example: a px = b cm --> MAP_SIZE_COEFF = b/a
-MAP_SIZE_COEFF = 1.0
+
+# 47px = 547cm --> MAP_SIZE_COEFF = 547/47
+MAP_SIZE_COEFF = 547/47
 
 class Background(pygame.sprite.Sprite):
     def __init__(self, image, location, scale):
@@ -41,8 +43,8 @@ def get_turning_angle(pos0, pos1, posref):
     magA = math.sqrt(aX**2 + aY**2)
 
     # magnitude of B
-    bX = pos1[0]-posref[0]
-    bY = pos1[1]-posref[1]
+    bX = posref[0]-pos1[0]
+    bY = posref[1]-pos1[1]
     magB = math.sqrt(bX**2 + bY**2)
 
     #  dot product
