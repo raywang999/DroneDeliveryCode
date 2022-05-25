@@ -12,8 +12,8 @@ running = True
 
 # For example: a px = b cm --> MAP_SIZE_COEFF = b/a
 
-# 47px = 547cm --> MAP_SIZE_COEFF = 547/47
-MAP_SIZE_COEFF = 547/47
+# 47px = 500cm --> MAP_SIZE_COEFF = 547/47
+MAP_SIZE_COEFF = 500/125
 
 class Background(pygame.sprite.Sprite):
     def __init__(self, image, location, scale):
@@ -67,7 +67,7 @@ path_wp = []
 index = 0
 
 # load background image
-bg = Background('image.png', [0,0], 1.0)
+bg = Background('image.png', [0,0], 0.8)
 screen.blit(bg.image, bg.rect)
 
 # Get mouse input => Set waypoints
