@@ -34,7 +34,7 @@ class drone_controller:
 d = drone_controller()
 
 print("length path_coords: ", len(path_coords))
-print("length path_dist: ", len(path_dist))
+print("length path_dist: ", len(path_dist))s
 print(turning_angle)
 
 # loop through the coordinate points and adjust the drone's direction accordingly
