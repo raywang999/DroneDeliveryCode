@@ -1,3 +1,6 @@
-from djitellopy import tello
+drone.takeoff()
+drone.move_forward(547)
+drone.move_forward(547)
+drone.move_forward(400)
 
-drone = tello.Tello()
+drone.land()

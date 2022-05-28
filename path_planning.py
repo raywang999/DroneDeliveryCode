@@ -3,7 +3,7 @@ import json
 import math
 
 from typing import NewType
-
+from drone_controller import drone_controller
 Coordinate = NewType('Coordinate', tuple[float, float])
 
 def getDistance(coord1: Coordinate, coord2: Coordinate):
@@ -56,8 +56,8 @@ running = True
 
 # For example: a px = b cm --> MAP_SIZE_COEFF = b/a
 
-# 47px = 500cm --> MAP_SIZE_COEFF = 547/47
-MAP_SIZE_COEFF = 500/125
+# 47px = 500cm --> MAP_SIZE_COEFF = 500/47
+MAP_SIZE_COEFF = 500/136
 
 class Background(pygame.sprite.Sprite):
     def __init__(self, image, location, scale):
@@ -110,6 +110,54 @@ path_wp = []
 # Pointer
 index = 0
 
+def save_JSON():
+    # Computing waypoints (distance and angle)
+
+    path_dis_cm=[]
+    path_dis_px =[]
+    path_angle = []
+
+    # Append first pos ref. (this is a dummy) to help the drone navigate where to go after taking off
+    path_wp.insert(0, (path_wp[0][0], path_wp[0][1] - 10))
+
+    for index in range(len(path_wp)):
+        # Skip first and second index (dummy)
+        if(index > 1):
+            dis_cm, dis_px = get_dist(path_wp[index-1], path_wp[index])
+            path_dis_cm.append(dis_cm)
+            path_dis_px.append(dis_px)
+        
+        if index > 0 and index < len(path_wp)-1:
+            # skip first and last index as we don't have enough info
+            angle = get_turning_angle(path_wp[index -1], path_wp[index+1], path_wp[index])
+            path_angle.append(angle) 
+
+    # print('path_wp: {}', format(path_wp))
+    # print('dis_cm: {}', format(path_dis_cm))
+    # print('dis_px: {}', format(path_dis_px))
+    print('dis_angle: {}', format(path_angle))
+
+    # Save waypoints in JSON file
+
+    waypoints = []
+
+    for i in range (len(path_dis_cm)):
+        waypoints.append({
+            "dist_cm": path_dis_cm[i],
+            "dis_px": path_dis_px[i],
+            "angle_deg": path_angle[i]
+        })
+
+    #  Save JSON file
+
+    f = open('waypoints.json', 'w+')
+    path_wp.pop(0) #Remove the dummy before saving
+    json.dump({
+        "wp": waypoints,
+        "pos": path_wp
+    }, f, indent = 4)
+    f.close()
+
 # load background image
 bg = Background('image.png', [0,0], 0.8)
 screen.blit(bg.image, bg.rect)
@@ -120,6 +168,8 @@ while running:
         if event.type == pygame.QUIT:
             # Quit the program when the "X" button is clicked
             running = False
+            save_JSON()
+
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # Get the position where the mouse click is
             pos = pygame.mouse.get_pos()
@@ -132,49 +182,5 @@ while running:
 
     pygame.display.update()
 
-# Computing waypoints (distance and angle)
-
-path_dis_cm=[]
-path_dis_px =[]
-path_angle = []
-
-# Append first pos ref. (this is a dummy) to help the drone navigate where to go after taking off
-path_wp.insert(0, (path_wp[0][0], path_wp[0][1] - 10))
-
-for index in range(len(path_wp)):
-    # Skip first and second index (dummy)
-    if(index > 1):
-        dis_cm, dis_px = get_dist(path_wp[index-1], path_wp[index])
-        path_dis_cm.append(dis_cm)
-        path_dis_px.append(dis_px)
-    
-    if index > 0 and index < len(path_wp)-1:
-        # skip first and last index as we don't have enough info
-        angle = get_turning_angle(path_wp[index -1], path_wp[index+1], path_wp[index])
-        path_angle.append(angle) 
-
-print('path_wp: {}', format(path_wp))
-print('dis_cm: {}', format(path_dis_cm))
-print('dis_px: {}', format(path_dis_px))
-print('dis_angle: {}', format(path_angle))
-
-# Save waypoints in JSON file
-
-waypoints = []
-
-for i in range (len(path_dis_cm)):
-    waypoints.append({
-        "dist_cm": path_dis_cm[i],
-        "dis_px": path_dis_px[i],
-        "angle_deg": path_angle[i]
-    })
-
-#  Save JSON file
-
-f = open('waypoints.json', 'w+')
-path_wp.pop(0) #Remove the dummy before saving
-json.dump({
-    "wp": waypoints,
-    "pos": path_wp
-}, f, indent = 4)
-f.close()
+d = drone_controller()
+d.main_controller()
