@@ -27,7 +27,7 @@ class drone_controller:
             turning_angle.append(i["angle_deg"])
         
     def turn_left(self, value, deg):
-        if value == 0:
+        if value == 0 and path_coords[1][0] < path_coords[0][0]:
             # print("left: ", deg)
             drone.rotate_counter_clockwise(deg)
 
@@ -38,7 +38,7 @@ class drone_controller:
 
 
     def turn_right(self, value, deg):
-        if(value == 0):
+        if(value == 0 and path_coords[1][0] > path_coords[0][0]):
             # print("right: ", deg)
             drone.rotate_clockwise(deg)
 
@@ -49,6 +49,8 @@ class drone_controller:
 
     
     def main_controller(self):
+
+        inverted = False
         drone.takeoff()
 
         
@@ -56,13 +58,51 @@ class drone_controller:
         # loop through the coordinate points and adjust the drone's direction accordingly
         for i in range (1,len(path_coords)):
             
-            if path_coords[i][0] > path_coords[i-1][0]:
-                    self.turn_right(i-1,turning_angle[i-1])   
+            if(path_coords[i][1] > path_coords[i-1][1]):
+
+                if inverted == False:
+                    # Turn normally
+                    print("lower y - uninverted")
+
+                    if path_coords[i][0] > path_coords[i-1][0]:
+                            self.turn_right(i-1,turning_angle[i-1])   
+                    else:
+                        self.turn_left(i-1, turning_angle[i-1])
+
+                    inverted = True
+
+                else:
+                    # Turn in the inverted direction
+                    print("lower y - inverted")
+                    if path_coords[i][0] < path_coords[i-1][0]:
+                            self.turn_right(i-1,turning_angle[i-1])   
+                    else:
+                        self.turn_left(i-1, turning_angle[i-1])
+
             else:
-                self.turn_left(i-1, turning_angle[i-1])
+
+                if inverted == True:
+                    print('higher y - inverted')
+                    # Turn in inverted direction
+                    if path_coords[i][0] < path_coords[i-1][0]:
+                            self.turn_right(i-1,turning_angle[i-1])   
+                    else:
+                        self.turn_left(i-1, turning_angle[i-1])
+
+                    inverted = False
+
+                else:
+                    print('higher y - uninverted')
+
+                    # Turn normally
+                    if path_coords[i][0] > path_coords[i-1][0]:
+                            self.turn_right(i-1,turning_angle[i-1])   
+                    else:
+                        self.turn_left(i-1, turning_angle[i-1])
+            
 
             drone.move_forward(path_dist[i-1])
-            # print(turning_angle[i-1])
+            print(turning_angle[i-1])
 
         drone.land()
 

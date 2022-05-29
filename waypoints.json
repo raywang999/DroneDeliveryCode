@@ -1,55 +1,37 @@
 {
     "wp": [
         {
-            "dist_cm": 368,
-            "dis_px": 100,
-            "angle_deg": 94
+            "dist_cm": 147,
+            "dis_px": 40,
+            "angle_deg": 90
         },
         {
-            "dist_cm": 314,
-            "dis_px": 85,
-            "angle_deg": 106
+            "dist_cm": 148,
+            "dis_px": 40,
+            "angle_deg": 81
         },
         {
-            "dist_cm": 417,
-            "dis_px": 113,
-            "angle_deg": 38
-        },
-        {
-            "dist_cm": 377,
-            "dis_px": 102,
-            "angle_deg": 118
-        },
-        {
-            "dist_cm": 252,
-            "dis_px": 68,
-            "angle_deg": 98
+            "dist_cm": 271,
+            "dis_px": 73,
+            "angle_deg": 111
         }
     ],
     "pos": [
         [
-            311,
-            447
+            305,
+            521
         ],
         [
-            411,
-            454
+            345,
+            521
         ],
         [
-            441,
-            374
+            339,
+            481
         ],
         [
-            476,
-            482
-        ],
-        [
-            577,
-            501
-        ],
-        [
-            599,
-            436
+            267,
+            464
         ]
     ]
 }

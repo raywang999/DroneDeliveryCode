@@ -124,7 +124,6 @@ def save_JSON():
     # print('path_wp (before): ', format(path_wp))
 
 
-    path_wp = shortestPath(path_wp[0], path_wp[1:len(path_wp)-1], path_wp[len(path_wp)-1])
 
     # Append first pos ref. (this is a dummy) to help the drone navigate where to go after taking off
     path_wp.insert(0, (path_wp[0][0], path_wp[0][1] - 10))
@@ -188,7 +187,7 @@ while running:
             # Get the position where the mouse click is
             pos = pygame.mouse.get_pos()
 
-            
+            print(pos)
             if pos[0] <1180:
                 # print("Less than 1100")
                 # Add position where we just clicked
@@ -203,6 +202,8 @@ while running:
                 d.main_controller()
             
             if(plan_path.isOver(pos)):
+                path_wp = shortestPath(path_wp[0], path_wp[1:len(path_wp)-1], path_wp[len(path_wp)-1])
+
                 for i in range (0, len(path_wp)-1):
                     pygame.draw.line(screen, (255, 0, 0), path_wp[i], path_wp[i+1], 2)
                 
