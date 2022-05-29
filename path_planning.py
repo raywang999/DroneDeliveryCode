@@ -4,6 +4,8 @@ import math
 
 from typing import NewType
 from drone_controller import drone_controller
+from button import button
+
 Coordinate = NewType('Coordinate', tuple[float, float])
 
 def getDistance(coord1: Coordinate, coord2: Coordinate):
@@ -11,43 +13,11 @@ def getDistance(coord1: Coordinate, coord2: Coordinate):
 	nx, ny = coord2
 	return math.sqrt((cx-nx)*(cx-nx)+(cy-ny)*(cy-ny)) 
 
-# input: starting Coordinate, an array of Coordinates representing desired destinations, ending destination
-# output: an array of Coordinates listed in order of travel for shortest travel distances
 from heapq import heappush, heappop
-def shortestPath(start: Coordinate, stops: list[Coordinate], end: Coordinate):
-	itocoord: dict[int, Coordinate] = {0: start, 1: end}
-	itostops: dict[int, Coordinate] = {}
-	for stop in stops:
-		itocoord[len(itocoord)]=stop
-		itostops[len(itostops)+2]=stop
-	pq: list[tuple[int, list[int]]] = []
-	heappush(pq, (0, [0]))
-	minTime = 1000*60*60 # one hour
-	resultPath = []
-	while (len(pq)>0):
-		time, path = heappop(pq)
-		nextStops = {} 
-		for i in range(2, len(stops)+2):
-			nextStops[i] = True
-		for visStop in path:
-			nextStops.pop(visStop, None)
-		currCoord = itocoord[path[len(path)-1]]
-		if (len(nextStops)==0):
-			if (time>minTime): break
-			time += getDistance(currCoord, end)
-			path.append(1) # Add end coordinate to path
-			if (time<minTime):
-				minTime=time
-				resultPath=path
-		for nextStop in nextStops:
-			newpath = path.copy()
-			newpath.append(nextStop)
-			heappush(pq, (time+getDistance(currCoord, itocoord[nextStop]), newpath))
-	return list(map(lambda i: itocoord[i], resultPath))
-		
+
 
 pygame.init()
-screen = pygame.display.set_mode([1080,720])
+screen = pygame.display.set_mode([1500,720])
 screen.fill((255,255,255))
 running = True
 
@@ -75,6 +45,39 @@ def get_dist(pos0, pos1):
     dis_cm = dis_px*MAP_SIZE_COEFF
     return int(dis_cm), int(dis_px)
 
+# input: starting Coordinate, an array of Coordinates representing desired destinations, ending destination
+# output: an array of Coordinates listed in order of travel for shortest travel distances
+def shortestPath(start: Coordinate, stops: list[Coordinate], end: Coordinate):
+	itocoord: dict[int, Coordinate] = {0: start, 1: end}
+	itostops: dict[int, Coordinate] = {}
+	for stop in stops:
+		itocoord[len(itocoord)]=stop
+		itostops[len(itostops)+2]=stop
+	pq: list[tuple[int, list[int]]] = []
+	heappush(pq, (0, [0]))
+	minTime = 1000*60*60 # one hour
+	resultPath = []
+	while (len(pq)>0):
+		time, path = heappop(pq)
+		nextStops = {} 
+		for i in range(2, len(stops)+2):
+			nextStops[i] = True
+		for visStop in path:
+			nextStops.pop(visStop, None)
+		currCoord = itocoord[path[len(path)-1]]
+		if (len(nextStops)==0):
+			if (time>minTime): break
+			time += get_dist(currCoord, end)[0]
+			path.append(1) # Add end coordinate to path
+			if (time<minTime):
+				minTime=time
+				resultPath=path
+		for nextStop in nextStops:
+			newpath = path.copy()
+			newpath.append(nextStop)
+			heappush(pq, (time+ get_dist(currCoord, itocoord[nextStop])[0], newpath))
+	return list(map(lambda i: itocoord[i], resultPath))
+		
 def get_turning_angle(pos0, pos1, posref):
     # Get the angle between 2 lines relative to "posref"
     # Did so by using dot product calculation
@@ -111,11 +114,17 @@ path_wp = []
 index = 0
 
 def save_JSON():
+    global path_wp
     # Computing waypoints (distance and angle)
 
     path_dis_cm=[]
     path_dis_px =[]
     path_angle = []
+
+    # print('path_wp (before): ', format(path_wp))
+
+
+    path_wp = shortestPath(path_wp[0], path_wp[1:len(path_wp)-1], path_wp[len(path_wp)-1])
 
     # Append first pos ref. (this is a dummy) to help the drone navigate where to go after taking off
     path_wp.insert(0, (path_wp[0][0], path_wp[0][1] - 10))
@@ -132,10 +141,10 @@ def save_JSON():
             angle = get_turning_angle(path_wp[index -1], path_wp[index+1], path_wp[index])
             path_angle.append(angle) 
 
-    # print('path_wp: {}', format(path_wp))
+    print('path_wp (after): ', format(path_wp))
     # print('dis_cm: {}', format(path_dis_cm))
     # print('dis_px: {}', format(path_dis_px))
-    print('dis_angle: {}', format(path_angle))
+    # print('dis_angle: {}', format(path_angle))
 
     # Save waypoints in JSON file
 
@@ -162,25 +171,48 @@ def save_JSON():
 bg = Background('image.png', [0,0], 0.8)
 screen.blit(bg.image, bg.rect)
 
+take_off = button((0, 255, 0), 1260, 260, 150, 100, 'Take-Off')
+plan_path = button((0, 255, 0), 1260, 460, 150, 100, 'Plan Path')
+
 # Get mouse input => Set waypoints
 while running:
     for event in pygame.event.get():
+        take_off.draw(screen, (0,0,0))
+        plan_path.draw(screen, (0, 0 ,0))
+            
         if event.type == pygame.QUIT:
             # Quit the program when the "X" button is clicked
             running = False
-            save_JSON()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             # Get the position where the mouse click is
             pos = pygame.mouse.get_pos()
-            # Add position where we just clicked
-            path_wp.append(pos)
-            if index > 0:
-                pygame.draw.line(screen, (255,0,0), path_wp[index-1], pos, 2)
-            index += 1 
+
+            
+            if pos[0] <1180:
+                # print("Less than 1100")
+                # Add position where we just clicked
+                path_wp.append(pos)
+                index += 1 
+                pygame.draw.circle(screen, (255, 0,0 ), pos, 5)
+            
+
+            if(take_off.isOver(pos)):
+                save_JSON()
+                d = drone_controller()
+                d.main_controller()
+            
+            if(plan_path.isOver(pos)):
+                for i in range (0, len(path_wp)-1):
+                    pygame.draw.line(screen, (255, 0, 0), path_wp[i], path_wp[i+1], 2)
+                
+
+
+            # if index > 0:
+                # pygame.draw.line(screen, (255,0,0), path_wp[index-1], pos, 2)
+            
 
 
     pygame.display.update()
 
-d = drone_controller()
-d.main_controller()
+
