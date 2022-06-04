@@ -11,4 +11,4 @@ The project is fully scalable
 
 Instruction video followed to create the base of the project: https://www.youtube.com/watch?v=Fd-2vjMqr1U
 
-Demo video: 
+Demo video: https://vimeo.com/717121882
