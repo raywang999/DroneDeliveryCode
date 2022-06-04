@@ -9,6 +9,4 @@ The project implement the Dijkstra's algorithm to find the shortest path between
 
 The project is fully scalable
 
-Instruction video followed to create the base of the project: https://www.youtube.com/watch?v=Fd-2vjMqr1U
-
-Demo video: 
+# This branch is used for testing the Dijkstra's algorithm. Please go to _master_ branch to see the complete code
